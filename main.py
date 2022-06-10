@@ -120,26 +120,11 @@ def decode_caesar_shift():
                         print("[Detecting shift] Common word %r not in sentence." % common_word_inner)
         return
 
-    common = {
-        "the": [],
-        "be": [],
-        "and": [],
-        "of": [],
-        "to": [],
-        "in": [],
-        "you": [],
-        "it": [],
-        "me": [],
-        "our": [],
-        "she": [],
-        "her": [],
-        "they": [],
-        "them": [],
-        "cry": [],
-        "sorry": [],
-        "nexus": [],
-        "want": [],
-    }
+    common = {}
+    with open("./common_words.txt") as common_words_file:
+        for line in common_words_file.readlines():
+            line = line.lower().strip()
+            common[line] = []
     for common_word in common.keys():
         for shift in range(len(string.ascii_lowercase)):
             common[common_word].append(shift_word(common_word, shift))
