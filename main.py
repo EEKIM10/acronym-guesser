@@ -1,16 +1,26 @@
 import string
 import textwrap
+import os
 from pathlib import Path
 from typing import Optional
 
 
 def wrap_shift(_key: int) -> int:
     """Returns the wrapped shift"""
-    if _key > 25:
-        _key = 25
-    if _key <= -26:
-        _key = -26
-    return _key
+    # if _key > 25:
+    #     _key = 25
+    # if _key <= -26:
+    #     _key = -26
+    if _key < 0:
+        _key *= -1
+    new_key = 0
+    for _ in range(_key):
+        new_key += 1
+        if new_key > 25:
+            new_key = 0
+        elif new_key < 0:
+            new_key = 0
+    return new_key
 
 
 def do_shift(_key: int) -> str:
@@ -88,9 +98,9 @@ def acronym():
 def encode_caesar_shift():
     text = input("Text to encode: ")
     while True:
-        shift = input("Shift (-26 to 26): ")
+        shift = input("Shift (-26 to 26, or blank for random): ")
         try:
-            shift = int(shift)
+            shift = int(shift or str(int(os.urandom(1).hex(), base=16)))
         except ValueError:
             print("Please input a number between -26 and 26.")
         else:
@@ -217,8 +227,9 @@ def menu():
             print()
 
 
-while True:
-    try:
-        menu()
-    except (KeyboardInterrupt, EOFError):
-        break
+if __name__ == "__main__":
+    while True:
+        try:
+            menu()
+        except (KeyboardInterrupt, EOFError):
+            break
