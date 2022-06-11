@@ -1,6 +1,7 @@
 import string
 import textwrap
-from typing import Optional, List
+from pathlib import Path
+from typing import Optional
 
 
 def wrap_shift(_key: int) -> int:
@@ -52,10 +53,10 @@ def shift_word(word: str, _key: int) -> str:
 
 
 def acronym():
-    print("="*15)
+    print("=" * 15)
     print("=", "This guesser is shit", "=")
     print("=", "Honestly you're better at doing it yourself.", "=")
-    print("="*15)
+    print("=" * 15)
     decoded = ""
     with open("./words.txt") as file:
         all_words = [word.lower().strip() for word in file.readlines()]
@@ -108,26 +109,55 @@ def decode_caesar_shift():
             for common_word_inner, common_shifted in common.items():
                 if len(common_word_inner) == len(original_word):
                     print("[Detecting shift] Checking shifts on common word:", common_word_inner)
-                    for shift_key, shifted_word in enumerate(common_shifted):
+                    for _shift_key, shifted_word in enumerate(common_shifted):
                         print(
                             "[Detecting shift] Comparing words %r (%r) and %r."
                             % (shifted_word, common_word_inner, original_word)
                         )
                         if shifted_word.lower().strip() == original_word:
-                            print("[Detecting shift] Detected shift on word %r: %d!" % (common_word_inner, shift_key))
-                            return shift_key
+                            print("[Detecting shift] Detected shift on word %r: %d!" % (common_word_inner, _shift_key))
+                            return _shift_key
                     else:
                         print("[Detecting shift] Common word %r not in sentence." % common_word_inner)
         return
 
     common = {}
-    with open("./common_words.txt") as common_words_file:
-        for line in common_words_file.readlines():
-            line = line.lower().strip()
-            common[line] = []
+    here = Path(__file__).parent
+    # Add user custom words first
+    default_words = here / "default_words.txt"
+    user_words = here / "custom_words.txt"
+    if user_words.exists():
+        with user_words.open() as common_user_words_file:
+            for line in common_user_words_file.readlines():
+                line = line.lower().strip()
+                if not line or line.startswith("#"):
+                    continue
+                common[line] = []
+        print("Loaded user words file (custom_words.txt)")
+    else:
+        print("No user words found. If you would like to curate what the program looks for (to make automatic "
+              "decryption more accurate), create a file called 'custom_words.txt' and write whatever words you want"
+              " on each line. (note: lines starting with # are ignored)")
+
+    if not default_words.exists():
+        print(
+            "Failed to load default common words (default_words.txt) as the file does not exist."
+            " Please make sure you've supplied some custom words, otherwise automatic decryption will not work."
+        )
+    else:
+        with default_words.open() as common_words_file:
+            for line in common_words_file.readlines():
+                line = line.lower().strip()
+                common[line] = []
     for common_word in common.keys():
         for shift in range(len(string.ascii_lowercase)):
             common[common_word].append(shift_word(common_word, shift))
+
+    print(
+        "Loaded {:,} common words with {:,} total shifted common words.".format(
+            len(common), sum(map(lambda x: len(x), common.values()))
+        )
+    )
 
     encrypted = input("Encoded text: ").lower().strip()
     encrypted = "".join(let if let in string.ascii_lowercase + " " else "?" for let in encrypted)
@@ -135,8 +165,7 @@ def decode_caesar_shift():
     if expected_words_original:
         expected_words = [x.lower() for x in expected_words_original.split()]
         new_common = {
-            word: [shift_word(word, shift) for shift in range(len(string.ascii_lowercase))]
-            for word in expected_words
+            word: [shift_word(word, shift) for shift in range(len(string.ascii_lowercase))] for word in expected_words
         }
         common = {**new_common, **common}
 
