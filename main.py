@@ -1,3 +1,4 @@
+import random
 import string
 import textwrap
 import os
@@ -104,6 +105,8 @@ def encode_caesar_shift():
         except ValueError:
             print("Please input a number between -26 and 26.")
         else:
+            if shift == 1337:
+                return ultra_encode_caesar_shift(text)
             shift = wrap_shift(shift)
             break
 
@@ -111,7 +114,43 @@ def encode_caesar_shift():
     print("Encoded text @ %d: %s" % (shift, encoded))
 
 
+def ultra_encode_caesar_shift(text: str):
+    resolved = ""
+    keys = []
+    for word in text.split(" "):
+        random_number = random.randint(-26, 26)
+        resolved += shift_word(word, random_number) + " "
+        keys.append(random_number)
+    resolved = resolved[:-1]
+    print("Encoded text: %s" % resolved)
+    print("Encryption Keys: %s" % " ".join(str(n) for n in keys))
+
+
 def decode_caesar_shift():
+    def manual_search():
+        print(
+            "Failed to automatically detect shift key. Would you like to sift through possible combinations"
+            " manually? (This will show you one line at a time with each possible shift)"
+        )
+        value = input("> ")
+        if value.lower().startswith("y") is False:
+            print("Cancelling.")
+            return
+        else:
+            print("This will print the first line of each possible shift.")
+            print("If it looks like the shift has decoded correctly, type y and hit enter.")
+            print("If it does not look correct, press enter to move on to the next shift.")
+            first_line = textwrap.shorten(encrypted.splitlines(False)[0], 128, placeholder="")
+            for shift_key in range(-len(string.ascii_lowercase), len(string.ascii_lowercase)):
+                decoded = shift_word(first_line, shift_key)
+                print(" ", decoded, end="\r")
+                if input().lower().startswith("y"):
+                    print(decoded)
+                    print("Encryption key was", shift_key)
+                    return
+            else:
+                print("That's all the possible combinations!")
+
     def find_shift() -> Optional[int]:
         for original_word in encrypted.split():
             original_word = original_word.lower()
@@ -183,24 +222,10 @@ def decode_caesar_shift():
     if key is not None:
         print("Detected key:", key)
         print("Decoded text:", shift_word(encrypted, -key))
+        if input("Does this look correct? [Y/n] ").lower().startswith("n"):
+            manual_search()
     else:
-        print(
-            "Failed to automatically detect shift key. Would you like to sift through possible combinations"
-            " manually? (This will show you one line at a time with each possible shift)"
-        )
-        value = input("> ")
-        if value.lower().startswith("y") is False:
-            print("Cancelling.")
-            return
-        else:
-            first_line = textwrap.shorten(encrypted.splitlines(False)[0], 128, placeholder="")
-            for shift_key in range(-len(string.ascii_lowercase), len(string.ascii_lowercase)):
-                decoded = shift_word(first_line, shift_key)
-                print(" ", decoded, end="\r")
-                if input().lower().startswith("y"):
-                    print(decoded)
-                    print("Encryption key was", shift_key)
-                    return
+        manual_search()
 
 
 def menu():
