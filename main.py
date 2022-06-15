@@ -1,5 +1,6 @@
 import random
 import string
+import sys
 import textwrap
 import os
 from pathlib import Path
@@ -8,12 +9,6 @@ from typing import Optional
 
 def wrap_shift(_key: int) -> int:
     """Returns the wrapped shift"""
-    # if _key > 25:
-    #     _key = 25
-    # if _key <= -26:
-    #     _key = -26
-    if _key < 0:
-        _key *= -1
     new_key = 0
     for _ in range(_key):
         new_key += 1
@@ -21,6 +16,7 @@ def wrap_shift(_key: int) -> int:
             new_key = 0
         elif new_key < 0:
             new_key = 0
+
     return new_key
 
 
@@ -122,8 +118,10 @@ def ultra_encode_caesar_shift(text: str):
         resolved += shift_word(word, random_number) + " "
         keys.append(random_number)
     resolved = resolved[:-1]
-    print("Encoded text: %s" % resolved)
-    print("Encryption Keys: %s" % " ".join(str(n) for n in keys))
+    if sys.stdout.isatty():
+        print("Encoded text: %s" % resolved)
+        print("Encryption Keys: %s" % " ".join(str(n) for n in keys))
+    return resolved, keys
 
 
 def decode_caesar_shift():

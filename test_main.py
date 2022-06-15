@@ -24,3 +24,6 @@ def test_shift_word(word: str, n: int):
         assert word != shifted, "Shift was performed but the shift of %d didn't actually do anything: %r -> %r" % (
             n, word, shifted
         )
+
+    deshifted = shift_word(shifted, 26-n).lower()
+    assert deshifted == word, "Deshift gave the wrong result: %r vs %r." % (deshifted, word)
